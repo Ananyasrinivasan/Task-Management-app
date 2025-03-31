@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager - The Fun Edition 🎉</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #ff4757;
+            --secondary-color: #3742fa;
+            --background-light: #f1f2f6;
+            --background-dark: #2f3542;
+            --text-light: #ffffff;
+            --text-dark: #2d3436;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: var(--background-light);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+            transition: all 0.3s;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 30px auto;
+            padding: 25px;
+            background: white;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            display: none;
+            text-align: center;
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            background: var(--primary-color);
+            padding: 15px;
+            border-radius: 0 0 10px 10px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        button {
+            background: var(--secondary-color);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #2b2fc9;
+        }
+
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .completed {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        .dark-mode {
+            background: var(--background-dark);
+            color: var(--text-light);
+        }
+
+        .dark-mode .container {
+            background: #57606f;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a onclick="navigate('home')">🏠 Home</a>
+        <a onclick="navigate('tasks')">📋 Tasks</a>
+        <a onclick="navigate('about')">ℹ About</a>
+    </nav>
+
+    <div class="container" id="home">
+        <h1>Welcome to Task Manager 🎭</h1>
+        <p>Your tasks are about to get a lot funnier!</p>
+        <button onclick="navigate('tasks')">😂 Let’s Get Started</button>
+    </div>
+
+    <div class="container" id="tasks">
+        <h1>Task List 🤹‍♂️</h1>
+        <input type="text" id="taskInput" placeholder="Enter a task...">
+        <input type="date" id="taskDueDate">
+        <select id="taskPriority">
+            <option value="low">Low Priority 😴</option>
+            <option value="medium">Medium Priority 😐</option>
+            <option value="high">High Priority 🚀</option>
+        </select>
+        <button id="addTaskBtn">Add Task 🎯</button>
+        <button id="darkModeToggle">Dark Mode 🌙</button>
+        <ul id="taskList"></ul>
+    </div>
+
+    <div class="container" id="about">
+        <h1>About This App 🤖</h1>
+        <p>Designed to make your tasks enjoyable... or at least bearable.</p>
+        <button onclick="navigate('home')">🏡 Back to Home</button>
+    </div>
+
+    <script>
+        const jokes = [
+            "Why don’t skeletons fight each other? They don’t have the guts!",
+            "Why did the scarecrow win an award? Because he was outstanding in his field!",
+            "I'm reading a book on anti-gravity. It's impossible to put down!",
+            "Why do cows have hooves instead of feet? Because they lactose!"
+        ];
+
+        $(document).ready(function() {
+            navigate('home');
+            renderTasks();
+
+            $("#addTaskBtn").click(function() {
+                const taskText = $("#taskInput").val().trim();
+                const dueDate = $("#taskDueDate").val();
+                const priority = $("#taskPriority").val();
+                if (!taskText) return alert("Oops! You forgot to add a task! 🙃");
+
+                const tasks = loadTasks();
+                tasks.push({ id: Date.now(), title: taskText, dueDate, completed: false, priority });
+                saveTasks(tasks);
+                $("#taskInput").val("");
+                renderTasks();
+            });
+
+            $("#darkModeToggle").click(function() {
+                $("body").toggleClass("dark-mode");
+                alert("Welcome to the dark side! 🌑");
+            });
+        });
+
+        function navigate(page) {
+            $(".container").hide();
+            $("#" + page).fadeIn(300);
+        }
+
+        function loadTasks() {
+            return JSON.parse(localStorage.getItem("tasks")) || [];
+        }
+
+        function saveTasks(tasks) {
+            localStorage.setItem("tasks", JSON.stringify(tasks));
+        }
+
+        function renderTasks() {
+            const taskList = $("#taskList");
+            taskList.html("");
+            const tasks = loadTasks();
+            tasks.forEach(task => {
+                const taskItem = $("<li>")
+                    .addClass(`task-item ${task.completed ? 'completed' : ''}`)
+                    .html(`${task.title} (Due: ${task.dueDate || 'No Date'}) <button onclick="completeTask(${task.id})">✅ Complete</button> <button onclick="deleteTask(${task.id})">❌ Delete</button>`);
+                taskList.append(taskItem);
+            });
+        }
+
+        function completeTask(id) {
+            let tasks = loadTasks().map(task => {
+                if (task.id === id) task.completed = true;
+                return task;
+            });
+            saveTasks(tasks);
+            alert(jokes[Math.floor(Math.random() * jokes.length)]);
+            renderTasks();
+        }
+
+        function deleteTask(id) {
+            let tasks = loadTasks().filter(task => task.id !== id);
+            saveTasks(tasks);
+            renderTasks();
+        }
+    </script>
+</body>
+</html>
+
+
+
